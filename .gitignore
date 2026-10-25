@@ -1,0 +1,13 @@
+# Build output
+bin/
+obj/
+
+# Local tooling
+.claude/
+*.user
+
+# Working notes (Spanish, local paths)
+NOTAS_FASE1.md
+
+# Stray release packages (release zips are built under bin/)
+*.zip

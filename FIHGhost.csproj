@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net6.0</TargetFramework>
+    <AssemblyName>FIHGhost</AssemblyName>
+    <RootNamespace>FIHGhost</RootNamespace>
+    <Version>0.1.0</Version>
+    <LangVersion>latest</LangVersion>
+    <Nullable>disable</Nullable>
+    <Platforms>AnyCPU</Platforms>
+    <NoWarn>$(NoWarn);NETSDK1138</NoWarn>
+
+    <!-- Built against the interop assemblies BepInEx generates from the installed game,
+         so signatures can never drift from the build the mod actually runs on.
+         Override with: dotnet build -p:GameDir="path\to\game" -->
+    <GameDir Condition="'$(GameDir)' == ''">I:\SteamLibrary\steamapps\common\Flipping is Hard</GameDir>
+    <InteropDir>$(GameDir)\BepInEx\interop</InteropDir>
+
+    <!-- dotnet build -p:Deploy=true copies the dll into the game's plugin folder. -->
+    <Deploy Condition="'$(Deploy)' == ''">false</Deploy>
+  </PropertyGroup>
+
+  <Target Name="CheckInterop" BeforeTargets="BeforeBuild">
+    <Error Condition="!Exists('$(InteropDir)\Assembly-CSharp.dll')"
+           Text="$(InteropDir)\Assembly-CSharp.dll not found. Install BepInEx 6 IL2CPP into the game and run it once to generate the interop assemblies, or pass -p:GameDir=..." />
+    <Message Importance="high" Text="FIHGhost: building against $(InteropDir)" />
+  </Target>
+
+  <ItemGroup>
+    <PackageReference Include="BepInEx.Unity.IL2CPP" Version="6.0.0-be.*" IncludeAssets="compile" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Reference Include="$(InteropDir)\*.dll" Private="false" />
+  </ItemGroup>
+
+  <Target Name="DeployToGame" AfterTargets="Build" Condition="'$(Deploy)' == 'true'">
+    <MakeDir Directories="$(GameDir)\BepInEx\plugins\FIHGhost" />
+    <!-- The game holds the dll open while it runs; that should not fail the build. -->
+    <Copy SourceFiles="$(TargetPath)" DestinationFolder="$(GameDir)\BepInEx\plugins\FIHGhost"
+          ContinueOnError="WarnAndContinue" Retries="2" RetryDelayMilliseconds="300">
+      <Output TaskParameter="CopiedFiles" ItemName="DeployedFile" />
+    </Copy>
+    <Message Importance="high" Condition="'@(DeployedFile)' != ''"
+             Text="FIHGhost: deployed to $(GameDir)\BepInEx\plugins\FIHGhost" />
+    <Warning Condition="'@(DeployedFile)' == ''"
+             Text="FIHGhost: NOT deployed to $(GameDir) - close the game and build again." />
+  </Target>
+
+</Project>
