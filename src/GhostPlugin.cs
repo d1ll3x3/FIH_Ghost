@@ -10,7 +10,7 @@ using Object = UnityEngine.Object;
 
 namespace FIHGhost
 {
-    [BepInPlugin(Guid, "FIH Ghost", "0.1.0")]
+    [BepInPlugin(Guid, "FIH Ghost", "0.1.1")]
     public class GhostPlugin : BasePlugin
     {
         public const string Guid = "com.dani.fihghost";
